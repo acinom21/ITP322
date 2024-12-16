@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <title>Moto Finds</title>
+</head>
+<body>
+    <header>
+        <h1>Moto Finds</h1>
+    </header>
+
+    <section class="search">
+        <h2 class="heading">MOTO FINDS</h2>
+        <br>
+        <input type="text" name="search" id="search" placeholder="Input Brand">
+        <button onclick="searchBrand()">Search</button>
+    </section>
+
+    <section class="recommendation">
+        <h1>Recommendation</h1>
+
+        <div class="brand-recommendation" id="results">
+            <!-- Ma display uya yung results -->
+        </div>
+    </section>
+
+    <script>
+        async function searchBrand() {
+            const query = document.getElementById('search').value.trim();
+            const resultsContainer = document.getElementById('results');
+
+            if (!query) {
+                resultsContainer.innerHTML = '<p>Please enter a brand to search.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search?brand=${query}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    resultsContainer.innerHTML = `<p>${data.error || 'Error fetching results'}</p>`;
+                }
+            } catch (error) {
+                console.error(error);
+                resultsContainer.innerHTML = '<p>Something went wrong. Please try again later.</p>';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = '';
+
+            if (data.length === 0) {
+                resultsContainer.innerHTML = '<p>No results found.</p>';
+                return;
+            }
+
+            data.forEach(item => {
+                const brandBox = document.createElement('div');
+                brandBox.className = 'box';
+
+                const brandImage = document.createElement('img');
+                brandImage.src = item.image_url || '/static/placeholder.png';
+                brandImage.alt = item.model;
+
+                const brandName = document.createElement('p');
+                brandName.textContent = `${item.make} ${item.model}`;
+
+                brandBox.appendChild(brandImage);
+                brandBox.appendChild(brandName);
+                resultsContainer.appendChild(brandBox);
+            });
+        }
+    </script>
+</body>
+</html>
